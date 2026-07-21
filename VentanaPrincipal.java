@@ -1,0 +1,93 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.concurrent.Flow;
+
+public class VentanaPrincipal extends JFrame implements ActionListener{
+    JPanel centro,derecho,d1,d2,d22; 
+    JSlider jsVelocidad;
+    JComboBox cboRecorrido;  
+    JButton modo,ejecutar,guardar,cargar,limpiar; 
+    PanelGrafo panel; 
+    
+
+    public VentanaPrincipal(){
+        cargarComponenntes();
+        configurarVentana(); 
+        
+    }
+    public void cargarComponenntes(){
+        setSize(500,500);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new BorderLayout());
+        setTitle("Grafos");
+        setVisible(true);
+        setLocationRelativeTo(null);
+    }
+    public void configurarVentana(){
+        //CONFIGURANDO EL PANEL DEL CENTRO
+        centro = new JPanel(new GridLayout(1,1)); 
+            //Agregando el objeto de tipo PanelGrafo; 
+                panel = new PanelGrafo(); 
+
+        //agregando el panel al centro;
+        centro.add(panel); 
+
+
+        //Configurando el panel derecho
+        derecho = new  JPanel(new GridLayout(2,1,15,15)); 
+            //panel para algoritmo, velocidad y modo(D1)
+                d1 = new JPanel(new GridLayout(5,1,10,10));
+                d1.setBorder(BorderFactory.createTitledBorder( BorderFactory.createLineBorder(Color.GRAY, 1),"Configuración"));
+
+                //creando el combo
+                    String[] opciones = {"BFS","DFS"};
+                    cboRecorrido = new JComboBox<>(opciones);
+                //Creando el spinner 
+                    jsVelocidad = new JSlider(1,3,1); 
+                    jsVelocidad.setPaintTicks(true);      // Muestra las marcas
+                    jsVelocidad.setMajorTickSpacing(1);  // Marca grande cada 10
+                    jsVelocidad.setMinorTickSpacing(1);   // Marca pequeña cada 5
+                    jsVelocidad.setPaintLabels(true); // Muestra los números 
+                //Creando el boton "MODOS"
+                    modo = new JButton("Modo: crear arista(on)"); 
+            //Agregando los elementos al panel (d1)
+                d1.add(new JLabel("Algoritmo")); 
+                d1.add(cboRecorrido);
+                d1.add(new JLabel("Velocidad"));
+                d1.add(jsVelocidad);
+                d1.add(modo);
+            //panel para boton de ejecutar, guardar, cargar y limpiar lienzo(d2)
+                d2 = new JPanel(new GridLayout(3,1,10,10)); 
+                    //Creando los botones; 
+                        ejecutar = new JButton("Ejecutar recorrido"); 
+                        guardar = new   JButton("Guardar") ; 
+                        cargar = new JButton("Cargar"); 
+                        limpiar = new JButton("Limpiar lienzo");
+                    //creando el pannel d22 para agregar los dos botones juntos(guardar y cargar)                    
+                    d22 = new JPanel(new GridLayout(1,2)); 
+                    d22.add(guardar);
+                    d22.add(cargar);
+            //Agregando los elementos  al panel (d2)
+                d2.add(ejecutar);
+                d2.add(d22);
+                d2.add(limpiar);
+        //agregando los dos paneles al panel principal
+        derecho.add(d1);
+        derecho.add(d2);
+        //agregando el panel a la pantalla principal; 
+        add(derecho,BorderLayout.EAST); 
+                
+                
+
+
+
+    }       
+
+
+    public void actionPerformed(ActionEvent e){
+
+    }
+
+    
+}
