@@ -3,6 +3,7 @@ import java.awt.*;
 import java.awt.event.*;
 import Modelo.*;
 import javax.swing.*;
+import java.util.*;
 
 public class PanelGrafo extends JPanel {
     // Variables a usar
@@ -88,13 +89,19 @@ public class PanelGrafo extends JPanel {
         // 3. Dibujar los nodos (Unificamos la lógica de colores y bordes aquí)
         for (NodoGrafo nodo : grafo.getNodos()) {
             
-            // Determinar color de fondo según el estado
-            if (nodo == nodoInicial) {
-                g2d.setColor(Color.GREEN);
+            // Prioridad 1: Animación desde hilos
+            if (nodo.getEstadoAnimacion() == Modelo.EstadoAnimacion.ACTUAL) {
+                g2d.setColor(new Color(34, 197, 94));   // Verde brillante: se está visitando ahora
+            } else if (nodo.getEstadoAnimacion() == Modelo.EstadoAnimacion.VISITADO) {
+                g2d.setColor(new Color(245, 165, 36));  // Ámbar: ya fue visitado
+            
+            // Prioridad 2: Interacción manual del usuario
+            } else if (nodo == nodoInicial) {
+                g2d.setColor(Color.GREEN); // Nodo de inicio
             } else if (nodo == nodoHorver) {
-                g2d.setColor(Color.YELLOW);
+                g2d.setColor(Color.YELLOW); // Hover con el ratón
             } else {
-                g2d.setColor(new Color(173, 216, 230)); // Color por defecto
+                g2d.setColor(new Color(173, 216, 230)); // Color base (azul claro)
             }
             
             // Relleno
@@ -193,6 +200,18 @@ public class PanelGrafo extends JPanel {
         g2d.setColor(Color.BLACK); 
     }
 
+    public void marcarEstadoNodo(NodoGrafo nodo, Modelo.EstadoAnimacion estado) {
+        nodo.setEstadoAnimacion(estado);
+        repaint();
+    }
+
+    public void restablecerEstadosAnimacion() {
+        for (NodoGrafo n : grafo.getNodos()) {
+            n.setEstadoAnimacion(Modelo.EstadoAnimacion.NORMAL);
+        }
+        repaint();
+    }
+
     // =========================================================
     // CLASE INTERNA: Centraliza todo lo relacionado al ratón
     // =========================================================
@@ -289,5 +308,9 @@ public class PanelGrafo extends JPanel {
                 repaint();
             }
         }
+    }
+
+    public boolean tieneNodos() {
+        return !grafo.getNodos().isEmpty();
     }
 }

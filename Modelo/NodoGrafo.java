@@ -3,6 +3,7 @@ package Modelo;
 import java.util.*;
 
 public class NodoGrafo {
+    private EstadoAnimacion estadoAnimacion = EstadoAnimacion.NORMAL;
     private int id;
     private String etiqueta;
     private int x,y;
@@ -36,5 +37,14 @@ public class NodoGrafo {
     //Elimina las conexiones que tengan como nodo destino el pasado como parametro (c objeto conexion, temporal)
     public void eliminarConexionHacia(NodoGrafo destino){
         conexionesSalientes.removeIf(c -> c.getDestino().equals(destino));
+    }
+
+    //Estados del nodo
+    public EstadoAnimacion getEstadoAnimacion() { 
+        return estadoAnimacion; 
+    }
+    
+    public void setEstadoAnimacion(EstadoAnimacion estado) { 
+        this.estadoAnimacion = estado; 
     }
 }
