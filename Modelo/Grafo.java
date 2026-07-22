@@ -23,7 +23,7 @@ public class Grafo {
         }
         return false;
     }
-
+    
     //Crear nuevo nodo
     public NodoGrafo agregarNodo(String etiqueta, int x, int y){
         if (existeNodoConEtiqueta(etiqueta)) {

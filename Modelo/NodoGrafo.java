@@ -8,11 +8,12 @@ public class NodoGrafo {
     private int x,y;
     private List<Conexion> conexionesSalientes;
     
-    public NodoGrafo(int id, String etiqueta, int x, int y){
+    public NodoGrafo(int id, String etiqueta, int x, int y){    
         this.id=id;
         this.etiqueta=etiqueta;
         this.x=x;
         this.y=y;
+        this.conexionesSalientes = new ArrayList<>();
     }
     //Getters y setters
     public int getID(){ return id; }
@@ -21,7 +22,9 @@ public class NodoGrafo {
     public void setEtiqueta(String etiqueta){ this.etiqueta=etiqueta; }
     
     public int getX(){ return x; }
+    public void setX(int x){this.x = x;}
     public int getY(){ return y; }
+    public void setY(int y){this.y = y;}
 
     public List<Conexion> getConexionesSalientes(){
         return conexionesSalientes;
