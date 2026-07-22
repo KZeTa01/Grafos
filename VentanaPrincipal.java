@@ -1,7 +1,9 @@
 import javax.swing.*;
+
+import Paneles.*;
+
 import java.awt.*;
 import java.awt.event.*;
-import java.util.concurrent.Flow;
 
 public class VentanaPrincipal extends JFrame implements ActionListener{
     JPanel centro,derecho,d1,d2,d22; 
@@ -9,6 +11,7 @@ public class VentanaPrincipal extends JFrame implements ActionListener{
     JComboBox cboRecorrido;  
     JButton modo,ejecutar,guardar,cargar,limpiar; 
     PanelGrafo panel; 
+    PanelResultados inferior; 
     
 
     public VentanaPrincipal(){
@@ -78,8 +81,9 @@ public class VentanaPrincipal extends JFrame implements ActionListener{
         //agregando el panel a la pantalla principal; 
         add(derecho,BorderLayout.EAST); 
                 
-                
-
+        //CONFIGURANDO EL PANEL INFERIOR DE RESULTADOS
+        inferior = new PanelResultados(); 
+        add(inferior,BorderLayout.SOUTH);
 
 
     }       
