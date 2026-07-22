@@ -1,14 +1,19 @@
 import javax.swing.*;
+
+import Modelo.Grafo;
+import Paneles.*;
+
 import java.awt.*;
 import java.awt.event.*;
-import java.util.concurrent.Flow;
 
 public class VentanaPrincipal extends JFrame implements ActionListener{
     JPanel centro,derecho,d1,d2,d22; 
     JSlider jsVelocidad;
     JComboBox cboRecorrido;  
+    private boolean modoAristaActivo = false;
     JButton modo,ejecutar,guardar,cargar,limpiar; 
     PanelGrafo panel; 
+    PanelResultados inferior; 
     
 
     public VentanaPrincipal(){
@@ -27,10 +32,11 @@ public class VentanaPrincipal extends JFrame implements ActionListener{
         //CONFIGURANDO EL PANEL DEL CENTRO
         centro = new JPanel(new GridLayout(1,1)); 
             //Agregando el objeto de tipo PanelGrafo; 
-                panel = new PanelGrafo(); 
-
+            Grafo modeloGrafo = new Grafo(); // 1. Creas el modelo (la memoria de los datos)
+            panel = new PanelGrafo(modeloGrafo); // 2. Se lo pasas al lienzo visual
         //agregando el panel al centro;
         centro.add(panel); 
+        add(centro, BorderLayout.CENTER);
 
 
         //Configurando el panel derecho
@@ -50,6 +56,24 @@ public class VentanaPrincipal extends JFrame implements ActionListener{
                     jsVelocidad.setPaintLabels(true); // Muestra los números 
                 //Creando el boton "MODOS"
                     modo = new JButton("Modo: crear arista(on)"); 
+
+            modo = new JButton("Modo: Mover Nodos"); // Texto inicial por defecto
+            modo.addActionListener(e -> {
+                modoAristaActivo = !modoAristaActivo; // Invierte el estado (de false a true, y viceversa)
+                panel.setModoConectar(modoAristaActivo); // Le avisa a tu PanelGrafo
+                
+                // Cambiamos el texto (y opcionalmente el color) para que el usuario sepa en qué modo está
+                if (modoAristaActivo) {
+                    modo.setText("Modo: Crear Arista (ON)");
+                    modo.setBackground(Color.GREEN);
+                } else {
+                    modo.setText("Modo: Mover Nodos");
+                    modo.setBackground(null); // Vuelve al color por defecto
+                }
+            });
+
+
+
             //Agregando los elementos al panel (d1)
                 d1.add(new JLabel("Algoritmo")); 
                 d1.add(cboRecorrido);
@@ -77,8 +101,9 @@ public class VentanaPrincipal extends JFrame implements ActionListener{
         //agregando el panel a la pantalla principal; 
         add(derecho,BorderLayout.EAST); 
                 
-                
-
+        //CONFIGURANDO EL PANEL INFERIOR DE RESULTADOS
+        inferior = new PanelResultados(); 
+        add(inferior,BorderLayout.SOUTH);
 
 
     }       
