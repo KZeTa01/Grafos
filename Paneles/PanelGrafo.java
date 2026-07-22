@@ -69,7 +69,8 @@ public class PanelGrafo extends JPanel {
         for (NodoGrafo nodo : grafo.getNodos()) { 
             for (Conexion conexion : nodo.getConexionesSalientes()){ 
                 NodoGrafo destino = conexion.getDestino(); 
-                g2d.drawLine(nodo.getX(), nodo.getY(), destino.getX(), destino.getY()); 
+                //g2d.drawLine(nodo.getX(), nodo.getY(), destino.getX(), destino.getY());
+                dibujarAristaDirigida(g2d, nodo.getX(), nodo.getY(), destino.getX(), destino.getY(), conexion.getPeso()); 
             }
         }
 
@@ -122,6 +123,52 @@ public class PanelGrafo extends JPanel {
 
     public NodoGrafo getNodoInicial() {
         return nodoInicial;
+    }
+
+    private void dibujarAristaDirigida(Graphics2D g2d, int x1, int y1, int x2, int y2, int peso) {
+        int tamañoPunta = 10;
+        
+        // Diferencia de coordenadas
+        int dx = x2 - x1;
+        int dy = y2 - y1;
+        
+        // Ángulo de la línea
+        double angulo = Math.atan2(dy, dx);
+        
+        // Calcular el punto donde la flecha toca el borde del nodo destino (para que no se oculte debajo del círculo)
+        int xDestino = (int) (x2 - RADIO_NODO * Math.cos(angulo));
+        int yDestino = (int) (y2 - RADIO_NODO * Math.sin(angulo));
+        
+        // 1. Dibujar la línea principal
+        g2d.drawLine(x1, y1, xDestino, yDestino);
+        
+        // 2. Calcular los vértices de la punta de la flecha
+        int xPunta1 = (int) (xDestino - tamañoPunta * Math.cos(angulo - Math.PI / 6));
+        int yPunta1 = (int) (yDestino - tamañoPunta * Math.sin(angulo - Math.PI / 6));
+        
+        int xPunta2 = (int) (xDestino - tamañoPunta * Math.cos(angulo + Math.PI / 6));
+        int yPunta2 = (int) (yDestino - tamañoPunta * Math.sin(angulo + Math.PI / 6));
+        
+        // 3. Dibujar la punta (un polígono sólido)
+        Polygon punta = new Polygon();
+        punta.addPoint(xDestino, yDestino);
+        punta.addPoint(xPunta1, yPunta1);
+        punta.addPoint(xPunta2, yPunta2);
+        g2d.fillPolygon(punta);
+        
+        // 4. Dibujar el peso de la conexión en el centro
+        int xMedio = (x1 + xDestino) / 2;
+        int yMedio = (y1 + yDestino) / 2;
+        
+        // Fondo blanco circular para que el número sea legible si se cruza con otras líneas
+        g2d.setColor(Color.WHITE);
+        g2d.fillOval(xMedio - 10, yMedio - 10, 20, 20); 
+        
+        g2d.setColor(Color.RED);
+        g2d.drawString(String.valueOf(peso), xMedio - 4, yMedio + 4);
+        
+        // Restaurar el color negro para la siguiente arista
+        g2d.setColor(Color.BLACK); 
     }
 
     // =========================================================
