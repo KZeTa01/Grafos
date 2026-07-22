@@ -31,7 +31,7 @@ public class VentanaPrincipal extends JFrame implements ActionListener{
     }
     public void configurarVentana(){
         //CONFIGURANDO EL PANEL DEL CENTRO
-        centro = new JPanel(new GridLayout(1,1)); 
+        centro = new JPanel(new GridLayout(1,1));
             //Agregando el objeto de tipo PanelGrafo; 
             Grafo modeloGrafo = new Grafo(); // 1. Creas el modelo (la memoria de los datos)
             panel = new PanelGrafo(modeloGrafo); // 2. Se lo pasas al lienzo visual
