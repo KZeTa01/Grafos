@@ -28,6 +28,7 @@ public class PanelResultados extends JPanel{
         crearEstilos(); 
 
         JScrollPane scroll = new JScrollPane(textPane);
+        scroll.setPreferredSize(new Dimension(0, 180));
         add(scroll, BorderLayout.CENTER);
     }
 

@@ -27,6 +27,10 @@ public class PanelGrafo extends JPanel {
         addMouseListener(manejador);
         addMouseMotionListener(manejador);
     }
+    public void limpiar() {
+        grafo = new Grafo();
+    repaint();
+}
 
     private void inicializarMenuContextual() {
         menuContextual = new JPopupMenu();
