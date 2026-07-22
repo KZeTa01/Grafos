@@ -121,6 +121,11 @@ public class PanelGrafo extends JPanel {
         return grafo;
     }
 
+    public void setGrafo(Grafo grafo){
+        this.grafo=grafo;
+        repaint();
+        }
+
     public NodoGrafo getNodoInicial() {
         return nodoInicial;
     }
