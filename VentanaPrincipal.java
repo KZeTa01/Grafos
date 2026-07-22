@@ -1,5 +1,6 @@
 import javax.swing.*;
 
+import Excepciones.FormatoInvalido;
 import Modelo.Grafo;
 import Paneles.*;
 
@@ -22,7 +23,7 @@ public class VentanaPrincipal extends JFrame implements ActionListener{
         
     }
     public void cargarComponenntes(){
-        setSize(500,500);
+        setSize(1000,860);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
         setTitle("Grafos");
@@ -42,7 +43,7 @@ public class VentanaPrincipal extends JFrame implements ActionListener{
         //Configurando el panel derecho
         derecho = new  JPanel(new GridLayout(2,1,15,15)); 
             //panel para algoritmo, velocidad y modo(D1)
-                d1 = new JPanel(new GridLayout(5,1,10,10));
+                d1 = new JPanel(new GridLayout(5,1,10,4));
                 d1.setBorder(BorderFactory.createTitledBorder( BorderFactory.createLineBorder(Color.GRAY, 1),"Configuración"));
 
                 //creando el combo
@@ -81,7 +82,9 @@ public class VentanaPrincipal extends JFrame implements ActionListener{
                 d1.add(jsVelocidad);
                 d1.add(modo);
             //panel para boton de ejecutar, guardar, cargar y limpiar lienzo(d2)
-                d2 = new JPanel(new GridLayout(3,1,10,10)); 
+                d2 = new JPanel(new GridLayout(3,1,10,4));
+                d2.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(Color.GRAY, 1), "Acciones"));
                     //Creando los botones; 
                         ejecutar = new JButton("Ejecutar recorrido"); 
                         guardar = new   JButton("Guardar") ; 
@@ -104,14 +107,47 @@ public class VentanaPrincipal extends JFrame implements ActionListener{
         //CONFIGURANDO EL PANEL INFERIOR DE RESULTADOS
         inferior = new PanelResultados(); 
         add(inferior,BorderLayout.SOUTH);
-
+        
+        guardar.addActionListener(this);
+        limpiar.addActionListener(this);
+        cargar.addActionListener(this);
 
     }       
 
 
     public void actionPerformed(ActionEvent e){
+        if(e.getSource()==limpiar){
+            inferior.limpiar();
+            panel.limpiar();
 
+        } else if(e.getSource() == cargar){
+            JFileChooser selector = new JFileChooser();
+            int resultado = selector.showOpenDialog(this);  
+
+            if (resultado == JFileChooser.APPROVE_OPTION) {
+                String ruta = selector.getSelectedFile().getAbsolutePath();
+            try {
+                Grafo grafoCargado = PersistenciaGrafos.cargar(ruta);
+                
+                panel.setGrafo(grafoCargado);
+                inferior.registrarPaso("Grafo cargado correctamente desde " + selector.getSelectedFile().getName());
+            } catch (FormatoInvalido ex) {
+                    JOptionPane.showMessageDialog(this,
+                    ex.getMessage(),
+                    "Archivo inválido",
+                    JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }else if(e.getSource()==guardar){
+            JFileChooser selector = new JFileChooser();
+            int resultado = selector.showSaveDialog(this);
+
+            if(resultado == JFileChooser.APPROVE_OPTION){
+                String ruta = selector.getSelectedFile().getAbsolutePath();
+                PersistenciaGrafos.guardar(panel.getGrafo(), ruta);
+                inferior.registrarPaso("Grafo guardado en " + selector.getSelectedFile().getName());
+            }
+        }
     }
-
     
 }
