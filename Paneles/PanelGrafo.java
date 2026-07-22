@@ -133,46 +133,58 @@ public class PanelGrafo extends JPanel {
     private void dibujarAristaDirigida(Graphics2D g2d, int x1, int y1, int x2, int y2, int peso) {
         int tamañoPunta = 10;
         
-        // Diferencia de coordenadas
+        // 1. Calcular la diferencia de coordenadas y el ángulo original
         int dx = x2 - x1;
         int dy = y2 - y1;
-        
-        // Ángulo de la línea
         double angulo = Math.atan2(dy, dx);
         
-        // Calcular el punto donde la flecha toca el borde del nodo destino (para que no se oculte debajo del círculo)
-        int xDestino = (int) (x2 - RADIO_NODO * Math.cos(angulo));
-        int yDestino = (int) (y2 - RADIO_NODO * Math.sin(angulo));
+        // 2. Calcular el desplazamiento perpendicular (offset)
+        // Separamos la línea 8 píxeles del centro exacto
+        int separacion = 8;
+        int offsetX = (int) (separacion * Math.cos(angulo + Math.PI / 2));
+        int offsetY = (int) (separacion * Math.sin(angulo + Math.PI / 2));
         
-        // 1. Dibujar la línea principal
-        g2d.drawLine(x1, y1, xDestino, yDestino);
+        // Aplicar el desplazamiento a los centros virtuales
+        int x1Offset = x1 + offsetX;
+        int y1Offset = y1 + offsetY;
+        int x2Offset = x2 + offsetX;
+        int y2Offset = y2 + offsetY;
         
-        // 2. Calcular los vértices de la punta de la flecha
+        // 3. Calcular el destino real para que la punta no quede debajo del círculo
+        // Usamos los centros desplazados para este cálculo
+        int xDestino = (int) (x2Offset - RADIO_NODO * Math.cos(angulo));
+        int yDestino = (int) (y2Offset - RADIO_NODO * Math.sin(angulo));
+        
+        // 4. Dibujar la línea principal ya separada
+        g2d.drawLine(x1Offset, y1Offset, xDestino, yDestino);
+        
+        // 5. Calcular los vértices de la punta de la flecha
         int xPunta1 = (int) (xDestino - tamañoPunta * Math.cos(angulo - Math.PI / 6));
         int yPunta1 = (int) (yDestino - tamañoPunta * Math.sin(angulo - Math.PI / 6));
         
         int xPunta2 = (int) (xDestino - tamañoPunta * Math.cos(angulo + Math.PI / 6));
         int yPunta2 = (int) (yDestino - tamañoPunta * Math.sin(angulo + Math.PI / 6));
         
-        // 3. Dibujar la punta (un polígono sólido)
+        // 6. Dibujar la punta (polígono)
         Polygon punta = new Polygon();
         punta.addPoint(xDestino, yDestino);
         punta.addPoint(xPunta1, yPunta1);
         punta.addPoint(xPunta2, yPunta2);
         g2d.fillPolygon(punta);
         
-        // 4. Dibujar el peso de la conexión en el centro
-        int xMedio = (x1 + xDestino) / 2;
-        int yMedio = (y1 + yDestino) / 2;
+        // 7. Dibujar el peso de la conexión en el nuevo centro desplazado
+        int xMedio = (x1Offset + xDestino) / 2;
+        int yMedio = (y1Offset + yDestino) / 2;
         
-        // Fondo blanco circular para que el número sea legible si se cruza con otras líneas
+        // Fondo blanco circular para legibilidad
         g2d.setColor(Color.WHITE);
         g2d.fillOval(xMedio - 10, yMedio - 10, 20, 20); 
         
+        // Texto del peso
         g2d.setColor(Color.RED);
         g2d.drawString(String.valueOf(peso), xMedio - 4, yMedio + 4);
         
-        // Restaurar el color negro para la siguiente arista
+        // Restaurar el color negro
         g2d.setColor(Color.BLACK); 
     }
 
