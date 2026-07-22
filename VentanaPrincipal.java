@@ -105,7 +105,8 @@ public class VentanaPrincipal extends JFrame implements ActionListener{
         //CONFIGURANDO EL PANEL INFERIOR DE RESULTADOS
         inferior = new PanelResultados(); 
         add(inferior,BorderLayout.SOUTH);
-
+        
+        guardar.addActionListener(this);
         limpiar.addActionListener(this);
         cargar.addActionListener(this);
 
@@ -124,7 +125,8 @@ public class VentanaPrincipal extends JFrame implements ActionListener{
                 String ruta = selector.getSelectedFile().getAbsolutePath();
             try {
                 Grafo grafoCargado = PersistenciaGrafos.cargar(ruta);
-                // aquí se lo pasarías al panel del lienzo cuando exista ese método
+                
+                panel.setGrafo(grafoCargado);
                 inferior.registrarPaso("Grafo cargado correctamente desde " + selector.getSelectedFile().getName());
             } catch (FormatoInvalido ex) {
                     JOptionPane.showMessageDialog(this,
@@ -132,6 +134,15 @@ public class VentanaPrincipal extends JFrame implements ActionListener{
                     "Archivo inválido",
                     JOptionPane.ERROR_MESSAGE);
                 }
+            }
+        }else if(e.getSource()==guardar){
+            JFileChooser selector = new JFileChooser();
+            int resultado = selector.showSaveDialog(this);
+
+            if(resultado == JFileChooser.APPROVE_OPTION){
+                String ruta = selector.getSelectedFile().getAbsolutePath();
+                PersistenciaGrafos.guardar(panel.getGrafo(), ruta);
+                inferior.registrarPaso("Grafo guardado en " + selector.getSelectedFile().getName());
             }
         }
     }
