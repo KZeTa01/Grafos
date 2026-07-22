@@ -44,7 +44,7 @@ public class VentanaPrincipal extends JFrame implements ActionListener{
         derecho = new  JPanel(new GridLayout(2,1,15,15)); 
             //panel para algoritmo, velocidad y modo(D1)
                 d1 = new JPanel(new GridLayout(5,1,10,4));
-                d1.setBorder(BorderFactory.createTitledBorder( BorderFactory.createLineBorder(Color.GRAY, 1),"Configuración"));
+                d1.setBorder(BorderFactory.createTitledBorder( BorderFactory.createLineBorder(Color.blue, 1),"Configuración"));
 
                 //creando el combo
                     String[] opciones = {"BFS","DFS"};
@@ -84,7 +84,7 @@ public class VentanaPrincipal extends JFrame implements ActionListener{
             //panel para boton de ejecutar, guardar, cargar y limpiar lienzo(d2)
                 d2 = new JPanel(new GridLayout(3,1,10,4));
                 d2.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(Color.GRAY, 1), "Acciones"));
+                BorderFactory.createLineBorder(Color.blue, 1), "Acciones"));
                     //Creando los botones; 
                         ejecutar = new JButton("Ejecutar recorrido"); 
                         guardar = new   JButton("Guardar") ; 
