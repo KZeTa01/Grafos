@@ -19,6 +19,7 @@ public class PanelGrafo extends JPanel {
     private boolean modoConectar;
 
     public PanelGrafo( Grafo grafo) {
+        setBorder(BorderFactory.createTitledBorder("Visualización"));
         this.grafo=grafo;
         inicializarMenuContextual();
 
