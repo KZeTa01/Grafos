@@ -1,5 +1,7 @@
 import javax.swing.*;
 
+import Excepciones.FormatoInvalido;
+import Modelo.Grafo;
 import Paneles.*;
 
 import java.awt.*;
@@ -85,13 +87,34 @@ public class VentanaPrincipal extends JFrame implements ActionListener{
         inferior = new PanelResultados(); 
         add(inferior,BorderLayout.SOUTH);
 
+        limpiar.addActionListener(this);
+        cargar.addActionListener(this);
 
     }       
 
 
     public void actionPerformed(ActionEvent e){
+        if(e.getSource()==limpiar){
+            inferior.limpiar();
 
+        } else if(e.getSource() == cargar){
+            JFileChooser selector = new JFileChooser();
+            int resultado = selector.showOpenDialog(this);  
+
+            if (resultado == JFileChooser.APPROVE_OPTION) {
+                String ruta = selector.getSelectedFile().getAbsolutePath();
+            try {
+                Grafo grafoCargado = PersistenciaGrafos.cargar(ruta);
+                // aquí se lo pasarías al panel del lienzo cuando exista ese método
+                inferior.registrarPaso("Grafo cargado correctamente desde " + selector.getSelectedFile().getName());
+            } catch (FormatoInvalido ex) {
+                    JOptionPane.showMessageDialog(this,
+                    ex.getMessage(),
+                    "Archivo inválido",
+                    JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }
     }
-
     
 }
