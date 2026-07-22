@@ -21,7 +21,6 @@ public class VentanaPrincipal extends JFrame implements ActionListener{
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
         setTitle("Grafos");
-        setVisible(true);
         setLocationRelativeTo(null);
     }
     public void configurarVentana(){
