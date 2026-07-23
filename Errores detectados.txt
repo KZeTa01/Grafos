@@ -2,3 +2,5 @@ Se solucionaran al final de todo del código
 
 - No se puede eliminar Conexiones (líneas)
 - No hay control en la longitud del nombre de un nodo (String)
+
+<
