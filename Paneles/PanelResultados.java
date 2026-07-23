@@ -56,7 +56,7 @@ public class PanelResultados extends JPanel{
         }
     }
 
-    public void registrarResumen(List<Integer> ordenDeVisita, boolean todosAlcanzados) {
+    public void registrarResumen(List<String> ordenDeVisita, boolean todosAlcanzados) {
         try {
             // Separador
             documento.insertString(documento.getLength(), "---\n", estiloNormal);
