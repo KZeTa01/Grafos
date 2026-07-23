@@ -318,8 +318,10 @@ public class PanelGrafo extends JPanel {
                             // GUARDAR EN EL HISTORIAL: La acción contraria (eliminarlo)
                             historialDeshacer.push(() -> grafo.eliminarNodo(nuevoNodo));
                             repaint(); 
+                        } else { //En caso se grafo.agregarNodo() devuelva null (o sea, el nodo ya existe)
+                            JOptionPane.showMessageDialog(PanelGrafo.this, "Ya existe un nodo con ese nombre. Por favor, use otro distinto.", "Nombre repetido", JOptionPane.WARNING_MESSAGE);
                         }
-                    }
+                    } 
                 } else {
                     // Clic sobre un nodo existente
                     if (modoConectar) {
