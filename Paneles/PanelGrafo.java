@@ -47,7 +47,7 @@ public class PanelGrafo extends JPanel {
         });
     }
 
-    public void limpiar() {
+    public void limpiar() {  
         grafo = new Grafo();
         nodoInicial = null;
     repaint();
