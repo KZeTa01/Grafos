@@ -1,28 +1,13 @@
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.*;
+import java.awt.event.*;
 import java.util.List;
 
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JSlider;
-import javax.swing.Timer;
+import javax.swing.*;
 
 import Algoritmos.GestorGrafo;
 import Excepciones.FormatoInvalido;
-import Modelo.EstadoAnimacion;
-import Modelo.Grafo;
-import Modelo.NodoGrafo;
-import Paneles.PanelGrafo;
-import Paneles.PanelResultados;
+import Modelo.*; 
+import Paneles.*; 
 
 public class VentanaPrincipal extends JFrame implements ActionListener{
     JPanel centro,derecho,d1,d2,d22; 
