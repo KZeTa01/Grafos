@@ -3,6 +3,9 @@ import java.awt.*;
 import java.awt.event.*;
 import Modelo.*;
 import javax.swing.*;
+
+import Excepciones.PesoInvalido;
+
 import java.util.*;
 
 public class PanelGrafo extends JPanel {
@@ -361,6 +364,9 @@ public class PanelGrafo extends JPanel {
                     if (pesoString != null && !pesoString.isEmpty()) {
                         try {
                             int peso = Integer.parseInt(pesoString);
+                            if (peso <1) {
+                                throw new PesoInvalido("El peso debe ser positivo");
+                            }
                             boolean exito = grafo.agregarConexion(nodoOrigenConexion, nodoDestino, peso);
                             
                             if (exito) {
@@ -375,6 +381,9 @@ public class PanelGrafo extends JPanel {
                             }
                         } catch (NumberFormatException ex){
                             JOptionPane.showMessageDialog(PanelGrafo.this, "El peso de la conexión debe ser un número entero.");
+                        }
+                        catch (PesoInvalido ex) {
+                            JOptionPane.showMessageDialog(PanelGrafo.this, ex.getMessage());  //No acepta pesos negativos
                         }
                     }
                 }
