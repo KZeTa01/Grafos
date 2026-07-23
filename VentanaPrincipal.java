@@ -43,7 +43,7 @@ public class VentanaPrincipal extends JFrame implements ActionListener{
         setSize(1000,860);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
-        setTitle("Grafos");
+        setTitle("Recorrido de nodos");
         setLocationRelativeTo(null);
     }
     public void configurarVentana(){
@@ -61,10 +61,10 @@ public class VentanaPrincipal extends JFrame implements ActionListener{
         derecho = new  JPanel(new GridLayout(2,1,15,15)); 
             //panel para algoritmo, velocidad y modo(D1)
                 d1 = new JPanel(new GridLayout(5,1,10,4));
-                d1.setBorder(BorderFactory.createTitledBorder( BorderFactory.createLineBorder(Color.GRAY, 1),"Configuración"));
+                d1.setBorder(BorderFactory.createTitledBorder( BorderFactory.createLineBorder(Color.blue, 1),"Configuración"));
 
                 //creando el combo
-                    String[] opciones = {"BFS","DFS"};
+                    String[] opciones = {"BFS","DFS","Dijkstra"};
                     cboRecorrido = new JComboBox<>(opciones);
                 //Creando el spinner 
                     jsVelocidad = new JSlider(1,3,1); 
@@ -101,7 +101,7 @@ public class VentanaPrincipal extends JFrame implements ActionListener{
             //panel para boton de ejecutar, guardar, cargar y limpiar lienzo(d2)
                 d2 = new JPanel(new GridLayout(3,1,10,4));
                 d2.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(Color.GRAY, 1), "Acciones"));
+                BorderFactory.createLineBorder(Color.blue, 1), "Acciones"));
                     //Creando los botones; 
                         ejecutar = new JButton("Ejecutar recorrido"); 
                         guardar = new   JButton("Guardar") ; 
@@ -207,7 +207,7 @@ public class VentanaPrincipal extends JFrame implements ActionListener{
         cargar.setEnabled(false);
         limpiar.setEnabled(false);
 
-        List<Integer> ordenIds = new java.util.ArrayList<>();
+        List<String> ordenIds = new java.util.ArrayList<>();
         int[] indice = {0};
 
         Timer timer = new Timer(delay, null);
@@ -221,7 +221,7 @@ public class VentanaPrincipal extends JFrame implements ActionListener{
                 NodoGrafo actual = orden.get(indice[0]);
                 panel.marcarEstadoNodo(actual, EstadoAnimacion.ACTUAL);
                 inferior.registrarPaso("Visitando nodo: " + actual.getEtiqueta());
-                ordenIds.add(actual.getID());
+                ordenIds.add(actual.getEtiqueta());
                 indice[0]++;
             } else {
                 ((Timer) ev.getSource()).stop();
