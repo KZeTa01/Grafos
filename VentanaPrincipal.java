@@ -1,11 +1,28 @@
-import javax.swing.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.List;
 
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.Timer;
+
+import Algoritmos.GestorGrafo;
 import Excepciones.FormatoInvalido;
+import Modelo.EstadoAnimacion;
 import Modelo.Grafo;
-import Paneles.*;
-
-import java.awt.*;
-import java.awt.event.*;
+import Modelo.NodoGrafo;
+import Paneles.PanelGrafo;
+import Paneles.PanelResultados;
 
 public class VentanaPrincipal extends JFrame implements ActionListener{
     JPanel centro,derecho,d1,d2,d22; 
@@ -111,6 +128,7 @@ public class VentanaPrincipal extends JFrame implements ActionListener{
         guardar.addActionListener(this);
         limpiar.addActionListener(this);
         cargar.addActionListener(this);
+        ejecutar.addActionListener(this);
 
     }       
 
@@ -147,7 +165,75 @@ public class VentanaPrincipal extends JFrame implements ActionListener{
                 PersistenciaGrafos.guardar(panel.getGrafo(), ruta);
                 inferior.registrarPaso("Grafo guardado en " + selector.getSelectedFile().getName());
             }
+        } else if(e.getSource()==ejecutar){
+            ejecutarRecorrido();
         }
+    }
+
+    private void ejecutarRecorrido() {
+        NodoGrafo inicio = panel.getNodoInicial();
+
+        if (!panel.tieneNodos()) {
+            JOptionPane.showMessageDialog(this, "El grafo está vacío.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        if (inicio == null) {
+            JOptionPane.showMessageDialog(this,
+                "Debe marcar un nodo como inicio (clic derecho sobre un nodo → 'Marcar como inicio').",
+                "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        panel.restablecerEstadosAnimacion();
+        inferior.limpiar();
+
+        String algoritmo = (String) cboRecorrido.getSelectedItem();
+        List<NodoGrafo> orden = algoritmo.equals("BFS")
+                ? GestorGrafo.bfs(panel.getGrafo(), inicio)
+                : GestorGrafo.dfs(panel.getGrafo(), inicio);
+
+        boolean todosAlcanzados = orden.size() == panel.getGrafo().getNodos().size();
+
+        // Velocidad del slider (1 a 3) -> delay del Timer en ms
+        int delay = switch (jsVelocidad.getValue()) {
+            case 1 -> 1200;
+            case 2 -> 700;
+            default -> 300;
+        };
+
+        // Bloquear botones mientras se anima
+        ejecutar.setEnabled(false);
+        guardar.setEnabled(false);
+        cargar.setEnabled(false);
+        limpiar.setEnabled(false);
+
+        List<Integer> ordenIds = new java.util.ArrayList<>();
+        int[] indice = {0};
+
+        Timer timer = new Timer(delay, null);
+        timer.addActionListener(ev -> {
+            if (indice[0] > 0) {
+                NodoGrafo anterior = orden.get(indice[0] - 1);
+                panel.marcarEstadoNodo(anterior, EstadoAnimacion.VISITADO);
+            }
+
+            if (indice[0] < orden.size()) {
+                NodoGrafo actual = orden.get(indice[0]);
+                panel.marcarEstadoNodo(actual, EstadoAnimacion.ACTUAL);
+                inferior.registrarPaso("Visitando nodo: " + actual.getEtiqueta());
+                ordenIds.add(actual.getID());
+                indice[0]++;
+            } else {
+                ((Timer) ev.getSource()).stop();
+                inferior.registrarResumen(ordenIds, todosAlcanzados);
+
+                ejecutar.setEnabled(true);
+                guardar.setEnabled(true);
+                cargar.setEnabled(true);
+                limpiar.setEnabled(true);
+            }
+        });
+        timer.start();
     }
     
 }
