@@ -5,86 +5,96 @@ import java.util.*;
 import Excepciones.NombreNodoInvalido;
 
 public class Grafo {
-    private List<NodoGrafo> nodos;
-    private int contadorIDs; //Generador de id unicos
-    private final int LONGITUD_MAXIMA_NOMBRE = 15;
 
-    public Grafo(){
+    // ------------------------------------------------------------------
+    // Estado del grafo
+    // ------------------------------------------------------------------
+    private final List<NodoGrafo> nodos;
+    private int contadorIDs;
+    private final int LONGITUD_MAXIMA_NOMBRE = 9;
+
+    // ------------------------------------------------------------------
+    // Constructor
+    // ------------------------------------------------------------------
+    public Grafo() {
         this.nodos = new ArrayList<>();
-        this.contadorIDs=1;
+        this.contadorIDs = 1;
     }
 
-    public List<NodoGrafo> getNodos(){
+    // ------------------------------------------------------------------
+    // Accesores
+    // ------------------------------------------------------------------
+    public List<NodoGrafo> getNodos() {
         return nodos;
     }
-    //Verificar si el nodo existe
-    public boolean existeNodoConEtiqueta(String etiqueta){
+
+    // ------------------------------------------------------------------
+    // Validaciones y operaciones de nodos
+    // ------------------------------------------------------------------
+    public boolean existeNodoConEtiqueta(String etiqueta) {
         for (NodoGrafo n : nodos) {
-            if (n.getEtiqueta().equalsIgnoreCase(etiqueta)){
+            if (n.getEtiqueta().equalsIgnoreCase(etiqueta)) {
                 return true;
             }
         }
         return false;
     }
-    
-    //Crear nuevo nodo
-    public NodoGrafo agregarNodo(String etiqueta, int x, int y) throws NombreNodoInvalido{
-        String nombre = (etiqueta==null) ? "": etiqueta;
+
+    public NodoGrafo agregarNodo(String etiqueta, int x, int y) throws NombreNodoInvalido {
+        String nombre = (etiqueta == null) ? "" : etiqueta;
+
         if (existeNodoConEtiqueta(nombre)) {
-            throw new NombreNodoInvalido("Ya existe un nodo con el nombre: "+nombre);
+            throw new NombreNodoInvalido("Ya existe un nodo con el nombre: " + nombre);
         }
         if (nombre.isEmpty()) {
             throw new NombreNodoInvalido("El nombre del nodo no puede estar vacío.");
         }
-        if (nombre.length()>LONGITUD_MAXIMA_NOMBRE) {
-            throw new NombreNodoInvalido("El nombre no puede tener más de "+LONGITUD_MAXIMA_NOMBRE+" carácteres.");
+        if (nombre.length() > LONGITUD_MAXIMA_NOMBRE) {
+            throw new NombreNodoInvalido("El nombre no puede tener más de " + LONGITUD_MAXIMA_NOMBRE + " carácteres.");
         }
+
         NodoGrafo nuevo = new NodoGrafo(contadorIDs++, nombre, x, y);
         nodos.add(nuevo);
         return nuevo;
-
     }
 
-    //Conectar nodos
-    public boolean agregarConexion(NodoGrafo origen, NodoGrafo destino, int peso){
-        //Validar si el nodo origen es igual al nodo destino
+    // ------------------------------------------------------------------
+    // Operaciones de conexiones
+    // ------------------------------------------------------------------
+    public boolean agregarConexion(NodoGrafo origen, NodoGrafo destino, int peso) {
         if (origen.equals(destino)) {
             return false;
         }
-        //Validar si la conexión ya fue registrada (verificar las conexiones de origen una 
-        // por una y ver si ya está el destino mencionado)
+
         for (Conexion conexion : origen.getConexionesSalientes()) {
             if (conexion.getDestino().equals(destino)) {
                 return false;
             }
         }
-        //Si pasa las validaciones, se crea la conexion
+
         origen.agregarConexion(new Conexion(origen, destino, peso));
         return true;
     }
-    
-    //Eliminar nodo
-    public void eliminarNodo(NodoGrafo nodoAEliminar){
-        //Elimina el nodo de la lista de nodos
+
+    public void eliminarNodo(NodoGrafo nodoAEliminar) {
         nodos.remove(nodoAEliminar);
 
-        //Eliminar cualquier conexión con el nodo eliminado
-        //Identificar conexión que apunte al nodo borrado
         for (NodoGrafo nodo : nodos) {
             nodo.eliminarConexionHacia(nodoAEliminar);
         }
     }
 
-    //Método para buscar nodo en el canva, al hacer click
-    //Se comparte las coordenadas del click y se verifica si hizo click en el rango del nodo
-    public NodoGrafo getNodoEnCoordenadas(int clickX, int clickY, int radio){
+    // ------------------------------------------------------------------
+    // Utilidades de interacción
+    // ------------------------------------------------------------------
+    public NodoGrafo getNodoEnCoordenadas(int clickX, int clickY, int radio) {
         for (NodoGrafo n : nodos) {
-            int dx = n.getX()-clickX; //Distancia entre la coordeanda del click y la coordenada real en x;
-            int dy = n.getY()-clickY; //Distancia entre la coordeanda del click y la coordenada real en y;
-            if (dx*dx + dy*dy <= radio*radio) {
+            int dx = n.getX() - clickX;
+            int dy = n.getY() - clickY;
+            if (dx * dx + dy * dy <= radio * radio) {
                 return n;
             }
         }
-        return null; //No se hizo click en algún nodo (o se dio click fuera del rango)
+        return null;
     }
 }
