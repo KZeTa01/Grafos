@@ -3,6 +3,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import Excepciones.FormatoInvalido;
+import Excepciones.NombreNodoInvalido;
 import Modelo.Conexion;
 import Modelo.Grafo;
 import Modelo.NodoGrafo; 

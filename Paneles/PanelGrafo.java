@@ -55,8 +55,14 @@ public class PanelGrafo extends JPanel {
     public void limpiar() {  
         grafo = new Grafo();
         nodoInicial = null;
-    repaint();
-}
+        nodoHorver = null;
+        nodoSeleccionado = null;
+        nodoSeleccionadoParaMover = null;
+        nodoOrigenConexion = null;
+        puntoRatonArrastre = null;
+        historialDeshacer.clear();
+        repaint();
+    }
 
     private void inicializarMenuContextual() {
         menuContextual = new JPopupMenu();
@@ -331,7 +337,7 @@ public class PanelGrafo extends JPanel {
 
                             }
                         } catch (NombreNodoInvalido ex) {
-                            JOptionPane.showConfirmDialog(PanelGrafo.this, ex.getMessage());
+                            JOptionPane.showMessageDialog(PanelGrafo.this, ex.getMessage(), "Nodo Existente", JOptionPane.WARNING_MESSAGE);
                         }
                     } 
                 } else {
