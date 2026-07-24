@@ -3,7 +3,6 @@ import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -14,11 +13,9 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
-import javax.swing.Timer;
 
 import Algoritmos.GestorGrafo;
 import Excepciones.FormatoInvalido;
-import Modelo.EstadoAnimacion;
 import Modelo.Grafo;
 import Modelo.NodoGrafo;
 import Paneles.PanelGrafo;
@@ -32,6 +29,7 @@ public class VentanaPrincipal extends JFrame implements ActionListener{
     JButton modo,ejecutar,guardar,cargar,limpiar; 
     PanelGrafo panel; 
     PanelResultados inferior; 
+    private final GestorGrafo gestorGrafo = new GestorGrafo();
     
 
     public VentanaPrincipal(){
@@ -72,15 +70,13 @@ public class VentanaPrincipal extends JFrame implements ActionListener{
                     jsVelocidad.setMajorTickSpacing(1);  // Marca grande cada 10
                     jsVelocidad.setMinorTickSpacing(1);   // Marca pequeña cada 5
                     jsVelocidad.setPaintLabels(true); // Muestra los números 
-                //Creando el boton "MODOS"
-                    modo = new JButton("Modo: crear arista(on)"); 
 
+            // (Se quitó la creación duplicada de "modo" que quedaba huérfana antes de esta)
             modo = new JButton("Modo: Mover Nodos"); // Texto inicial por defecto
             modo.addActionListener(e -> {
                 modoAristaActivo = !modoAristaActivo; // Invierte el estado (de false a true, y viceversa)
                 panel.setModoConectar(modoAristaActivo); // Le avisa a tu PanelGrafo
                 
-                // Cambiamos el texto (y opcionalmente el color) para que el usuario sepa en qué modo está
                 if (modoAristaActivo) {
                     modo.setText("Modo: Crear Arista (ON)");
                     modo.setBackground(Color.GREEN);
@@ -184,56 +180,20 @@ public class VentanaPrincipal extends JFrame implements ActionListener{
             return;
         }
 
-        panel.restablecerEstadosAnimacion();
-        inferior.limpiar();
-
         String algoritmo = (String) cboRecorrido.getSelectedItem();
-        List<NodoGrafo> orden = algoritmo.equals("BFS")
-                ? GestorGrafo.bfs(panel.getGrafo(), inicio)
-                : GestorGrafo.dfs(panel.getGrafo(), inicio);
 
-        boolean todosAlcanzados = orden.size() == panel.getGrafo().getNodos().size();
-
-        // Velocidad del slider (1 a 3) -> delay del Timer en ms
+        // Velocidad del slider (1 a 3) -> delay en ms entre pasos de la animación
         int delay = switch (jsVelocidad.getValue()) {
             case 1 -> 1200;
             case 2 -> 700;
             default -> 300;
         };
 
-        // Bloquear botones mientras se anima
-        ejecutar.setEnabled(false);
-        guardar.setEnabled(false);
-        cargar.setEnabled(false);
-        limpiar.setEnabled(false);
-
-        List<String> ordenIds = new java.util.ArrayList<>();
-        int[] indice = {0};
-
-        Timer timer = new Timer(delay, null);
-        timer.addActionListener(ev -> {
-            if (indice[0] > 0) {
-                NodoGrafo anterior = orden.get(indice[0] - 1);
-                panel.marcarEstadoNodo(anterior, EstadoAnimacion.VISITADO);
-            }
-
-            if (indice[0] < orden.size()) {
-                NodoGrafo actual = orden.get(indice[0]);
-                panel.marcarEstadoNodo(actual, EstadoAnimacion.ACTUAL);
-                inferior.registrarPaso("Visitando nodo: " + actual.getEtiqueta());
-                ordenIds.add(actual.getEtiqueta());
-                indice[0]++;
-            } else {
-                ((Timer) ev.getSource()).stop();
-                inferior.registrarResumen(ordenIds, todosAlcanzados);
-
-                ejecutar.setEnabled(true);
-                guardar.setEnabled(true);
-                cargar.setEnabled(true);
-                limpiar.setEnabled(true);
-            }
-        });
-        timer.start();
+        switch (algoritmo) {
+            case "BFS" -> gestorGrafo.animarBFS(panel, inferior, inicio, delay, ejecutar);
+            case "DFS" -> gestorGrafo.animarDFS(panel, inferior, inicio, delay, ejecutar);
+            case "Dijkstra" -> gestorGrafo.animarDijkstra(panel, inferior, inicio, delay, ejecutar);
+        }
     }
     
 }
