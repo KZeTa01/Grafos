@@ -7,7 +7,7 @@ import Excepciones.NombreNodoInvalido;
 public class Grafo {
     private List<NodoGrafo> nodos;
     private int contadorIDs; //Generador de id unicos
-    private final int LONGITUD_MAXIMA_NOMBRE = 6;
+    private final int LONGITUD_MAXIMA_NOMBRE = 15;
 
     public Grafo(){
         this.nodos = new ArrayList<>();
