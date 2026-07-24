@@ -4,6 +4,7 @@ import java.awt.event.*;
 import Modelo.*;
 import javax.swing.*;
 
+import Excepciones.NombreNodoInvalido;
 import Excepciones.PesoInvalido;
 
 import java.util.*;
@@ -14,6 +15,7 @@ public class PanelGrafo extends JPanel {
     private NodoGrafo nodoHorver;
     private JPopupMenu menuContextual;
     private NodoGrafo nodoSeleccionado;
+    private boolean edicionBloqueada = false;
 
     private Stack<Runnable> historialDeshacer = new Stack<>();
     
@@ -289,6 +291,10 @@ public class PanelGrafo extends JPanel {
         repaint();
     }
 
+    public void setEdicionBloqueada(boolean bloqueada) {
+        this.edicionBloqueada = bloqueada;
+    }
+
     // =========================================================
     // CLASE INTERNA: Centraliza todo lo relacionado al ratón
     // =========================================================
@@ -296,6 +302,9 @@ public class PanelGrafo extends JPanel {
         
         @Override
         public void mousePressed(MouseEvent e) {
+            if (edicionBloqueada) {
+                return; // No se permite editar mientras un algoritmo está animando
+            }
             NodoGrafo nodoClickeado = grafo.getNodoEnCoordenadas(e.getX(), e.getY(), RADIO_NODO);  
             
             // 1. Clic Derecho -> Menú Contextual (Ya lo tenías)
@@ -313,13 +322,16 @@ public class PanelGrafo extends JPanel {
                     // Clic en el vacío: Crear nodo nuevo
                     String nombre = JOptionPane.showInputDialog(PanelGrafo.this, "Nombre del nuevo nodo:");
                     if (nombre != null && !nombre.trim().isEmpty()) {
-                        NodoGrafo nuevoNodo = grafo.agregarNodo(nombre, e.getX(), e.getY());
-                        if (nuevoNodo != null) {
-                            // GUARDAR EN EL HISTORIAL: La acción contraria (eliminarlo)
-                            historialDeshacer.push(() -> grafo.eliminarNodo(nuevoNodo));
-                            repaint(); 
-                        } else { //En caso se grafo.agregarNodo() devuelva null (o sea, el nodo ya existe)
-                            JOptionPane.showMessageDialog(PanelGrafo.this, "Ya existe un nodo con ese nombre. Por favor, use otro distinto.", "Nombre repetido", JOptionPane.WARNING_MESSAGE);
+                        try{
+                            NodoGrafo nuevoNodo = grafo.agregarNodo(nombre, e.getX(), e.getY());
+                            if (nuevoNodo != null) {
+                                // GUARDAR EN EL HISTORIAL: La acción contraria (eliminarlo)
+                                historialDeshacer.push(() -> grafo.eliminarNodo(nuevoNodo));
+                                repaint(); 
+
+                            }
+                        } catch (NombreNodoInvalido ex) {
+                            JOptionPane.showConfirmDialog(PanelGrafo.this, ex.getMessage());
                         }
                     } 
                 } else {
