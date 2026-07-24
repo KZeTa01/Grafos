@@ -1,13 +1,37 @@
 package Paneles;
-import java.awt.*;
-import java.awt.event.*;
-import Modelo.*;
-import javax.swing.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Polygon;
+import java.awt.RenderingHints;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.Stack;
+
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
+import javax.swing.BorderFactory;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 
 import Excepciones.NombreNodoInvalido;
 import Excepciones.PesoInvalido;
-
-import java.util.*;
+import Modelo.Conexion;
+import Modelo.Grafo;
+import Modelo.NodoGrafo;
 
 public class PanelGrafo extends JPanel {
     // Variables a usar
@@ -25,6 +49,10 @@ public class PanelGrafo extends JPanel {
     private NodoGrafo nodoOrigenConexion = null;
     private Point puntoRatonArrastre = null;
     private boolean modoConectar;
+
+    // Bandera que indica si el lienzo debe bloquear la edición (crear/mover/conectar/eliminar nodos)
+    // Se activa mientras GestorGrafo está animando un recorrido (BFS/DFS/Dijkstra) en un hilo aparte,
+    // para evitar ConcurrentModificationException al tocar las mismas listas del grafo.
 
     public PanelGrafo( Grafo grafo) {
         setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.blue, 1),"Visualización"));
@@ -62,6 +90,15 @@ public class PanelGrafo extends JPanel {
         puntoRatonArrastre = null;
         historialDeshacer.clear();
         repaint();
+    }
+
+    // Habilita o deshabilita la edición del lienzo (usado por GestorGrafo mientras anima)
+    public void setEdicionBloqueada(boolean bloqueada) {
+        this.edicionBloqueada = bloqueada;
+    }
+
+    public boolean isEdicionBloqueada() {
+        return edicionBloqueada;
     }
 
     private void inicializarMenuContextual() {
@@ -297,10 +334,6 @@ public class PanelGrafo extends JPanel {
         repaint();
     }
 
-    public void setEdicionBloqueada(boolean bloqueada) {
-        this.edicionBloqueada = bloqueada;
-    }
-
     // =========================================================
     // CLASE INTERNA: Centraliza todo lo relacionado al ratón
     // =========================================================
@@ -356,6 +389,10 @@ public class PanelGrafo extends JPanel {
 
         @Override
         public void mouseDragged(MouseEvent e) {
+            if (edicionBloqueada) {
+                return;
+            }
+
             // Este evento se dispara continuamente mientras el usuario mueve el ratón sin soltar el clic
             
             if (nodoSeleccionadoParaMover != null) {
@@ -373,6 +410,14 @@ public class PanelGrafo extends JPanel {
 
         @Override
         public void mouseReleased(MouseEvent e) {
+            if (edicionBloqueada) {
+                // Limpiamos cualquier estado residual por si se soltó el clic estando bloqueado
+                nodoOrigenConexion = null;
+                puntoRatonArrastre = null;
+                nodoSeleccionadoParaMover = null;
+                return;
+            }
+
             if (modoConectar && nodoOrigenConexion != null) {
                 NodoGrafo nodoDestino = grafo.getNodoEnCoordenadas(e.getX(), e.getY(), RADIO_NODO);  
                 if (nodoDestino == null) { 
@@ -430,6 +475,10 @@ public class PanelGrafo extends JPanel {
     }
 
     public void deshacerAccion() {
+        if (edicionBloqueada) {
+            Toolkit.getDefaultToolkit().beep();
+            return;
+        }
         if (!historialDeshacer.isEmpty()) {
             // Saca la última acción almacenada y la ejecuta (.run)
             historialDeshacer.pop().run();
