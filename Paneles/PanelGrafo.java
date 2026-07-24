@@ -3,6 +3,10 @@ import java.awt.*;
 import java.awt.event.*;
 import Modelo.*;
 import javax.swing.*;
+
+import Excepciones.NombreNodoInvalido;
+import Excepciones.PesoInvalido;
+
 import java.util.*;
 
 public class PanelGrafo extends JPanel {
@@ -11,6 +15,7 @@ public class PanelGrafo extends JPanel {
     private NodoGrafo nodoHorver;
     private JPopupMenu menuContextual;
     private NodoGrafo nodoSeleccionado;
+    private boolean edicionBloqueada = false;
 
     private Stack<Runnable> historialDeshacer = new Stack<>();
     
@@ -50,8 +55,14 @@ public class PanelGrafo extends JPanel {
     public void limpiar() {  
         grafo = new Grafo();
         nodoInicial = null;
-    repaint();
-}
+        nodoHorver = null;
+        nodoSeleccionado = null;
+        nodoSeleccionadoParaMover = null;
+        nodoOrigenConexion = null;
+        puntoRatonArrastre = null;
+        historialDeshacer.clear();
+        repaint();
+    }
 
     private void inicializarMenuContextual() {
         menuContextual = new JPopupMenu();
@@ -286,6 +297,10 @@ public class PanelGrafo extends JPanel {
         repaint();
     }
 
+    public void setEdicionBloqueada(boolean bloqueada) {
+        this.edicionBloqueada = bloqueada;
+    }
+
     // =========================================================
     // CLASE INTERNA: Centraliza todo lo relacionado al ratón
     // =========================================================
@@ -293,6 +308,9 @@ public class PanelGrafo extends JPanel {
         
         @Override
         public void mousePressed(MouseEvent e) {
+            if (edicionBloqueada) {
+                return; // No se permite editar mientras un algoritmo está animando
+            }
             NodoGrafo nodoClickeado = grafo.getNodoEnCoordenadas(e.getX(), e.getY(), RADIO_NODO);  
             
             // 1. Clic Derecho -> Menú Contextual (Ya lo tenías)
@@ -310,13 +328,18 @@ public class PanelGrafo extends JPanel {
                     // Clic en el vacío: Crear nodo nuevo
                     String nombre = JOptionPane.showInputDialog(PanelGrafo.this, "Nombre del nuevo nodo:");
                     if (nombre != null && !nombre.trim().isEmpty()) {
-                        NodoGrafo nuevoNodo = grafo.agregarNodo(nombre, e.getX(), e.getY());
-                        if (nuevoNodo != null) {
-                            // GUARDAR EN EL HISTORIAL: La acción contraria (eliminarlo)
-                            historialDeshacer.push(() -> grafo.eliminarNodo(nuevoNodo));
-                            repaint(); 
+                        try{
+                            NodoGrafo nuevoNodo = grafo.agregarNodo(nombre, e.getX(), e.getY());
+                            if (nuevoNodo != null) {
+                                // GUARDAR EN EL HISTORIAL: La acción contraria (eliminarlo)
+                                historialDeshacer.push(() -> grafo.eliminarNodo(nuevoNodo));
+                                repaint(); 
+
+                            }
+                        } catch (NombreNodoInvalido ex) {
+                            JOptionPane.showMessageDialog(PanelGrafo.this, ex.getMessage(), "Nodo Existente", JOptionPane.WARNING_MESSAGE);
                         }
-                    }
+                    } 
                 } else {
                     // Clic sobre un nodo existente
                     if (modoConectar) {
@@ -361,6 +384,9 @@ public class PanelGrafo extends JPanel {
                     if (pesoString != null && !pesoString.isEmpty()) {
                         try {
                             int peso = Integer.parseInt(pesoString);
+                            if (peso <1) {
+                                throw new PesoInvalido("El peso debe ser positivo");
+                            }
                             boolean exito = grafo.agregarConexion(nodoOrigenConexion, nodoDestino, peso);
                             
                             if (exito) {
@@ -375,6 +401,9 @@ public class PanelGrafo extends JPanel {
                             }
                         } catch (NumberFormatException ex){
                             JOptionPane.showMessageDialog(PanelGrafo.this, "El peso de la conexión debe ser un número entero.");
+                        }
+                        catch (PesoInvalido ex) {
+                            JOptionPane.showMessageDialog(PanelGrafo.this, ex.getMessage());  //No acepta pesos negativos
                         }
                     }
                 }

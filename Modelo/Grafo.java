@@ -2,9 +2,12 @@ package Modelo;
 
 import java.util.*;
 
+import Excepciones.NombreNodoInvalido;
+
 public class Grafo {
     private List<NodoGrafo> nodos;
     private int contadorIDs; //Generador de id unicos
+    private final int LONGITUD_MAXIMA_NOMBRE = 6;
 
     public Grafo(){
         this.nodos = new ArrayList<>();
@@ -25,13 +28,21 @@ public class Grafo {
     }
     
     //Crear nuevo nodo
-    public NodoGrafo agregarNodo(String etiqueta, int x, int y){
-        if (existeNodoConEtiqueta(etiqueta)) {
-            return null;
+    public NodoGrafo agregarNodo(String etiqueta, int x, int y) throws NombreNodoInvalido{
+        String nombre = (etiqueta==null) ? "": etiqueta;
+        if (existeNodoConEtiqueta(nombre)) {
+            throw new NombreNodoInvalido("Ya existe un nodo con el nombre: "+nombre);
         }
-        NodoGrafo nuevo = new NodoGrafo(contadorIDs++, etiqueta, x, y);
+        if (nombre.isEmpty()) {
+            throw new NombreNodoInvalido("El nombre del nodo no puede estar vacío.");
+        }
+        if (nombre.length()>LONGITUD_MAXIMA_NOMBRE) {
+            throw new NombreNodoInvalido("El nombre no puede tener más de "+LONGITUD_MAXIMA_NOMBRE+" carácteres.");
+        }
+        NodoGrafo nuevo = new NodoGrafo(contadorIDs++, nombre, x, y);
         nodos.add(nuevo);
         return nuevo;
+
     }
 
     //Conectar nodos
