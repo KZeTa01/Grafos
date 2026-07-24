@@ -9,6 +9,8 @@ import javax.swing.*;
 import Excepciones.*;
 import Modelo.*;
 
+import javax.swing.border.TitledBorder;
+
 public class PanelGrafo extends JPanel {
 
     // ------------------------------------------------------------------
@@ -36,10 +38,34 @@ public class PanelGrafo extends JPanel {
     private boolean modoConectar;
 
     // ------------------------------------------------------------------
+    // Paleta de colores del tema del lienzo
+    // ------------------------------------------------------------------
+    private static final Color COLOR_FONDO_LIENZO = new Color(18, 22, 28);
+    private static final Color COLOR_RELLENO_NODO = new Color(28, 36, 49);
+    private static final Color COLOR_BORDE_NORMAL = new Color(127, 119, 221);   // morado (nodo normal)
+    private static final Color COLOR_BORDE_INICIO = new Color(29, 158, 117);    // verde azulado (nodo inicio)
+    private static final Color COLOR_BORDE_HOVER = new Color(239, 159, 39);     // ámbar (hover del mouse)
+    private static final Color COLOR_TEXTO_NODO = new Color(224, 224, 230);     // texto claro legible
+    private static final Color COLOR_ARISTA = new Color(140, 150, 165);         // gris azulado para las flechas
+    private static final Color COLOR_CHIP_PESO = new Color(44, 52, 64);        // fondo de la etiqueta de peso
+    private static final Color COLOR_TEXTO_PESO = new Color(250, 199, 117);     // texto ámbar claro
+
+    // ------------------------------------------------------------------
     // Constructor y configuración inicial
     // ------------------------------------------------------------------
     public PanelGrafo(Grafo grafo) {
-        setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.blue, 1), "Visualización"));
+        // Fondo del lienzo y borde con texto claro para que se lea bien encima
+        setOpaque(true);
+        setBackground(COLOR_FONDO_LIENZO);
+        setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(new Color(90, 110, 140), 1),
+                "Visualización",
+                TitledBorder.DEFAULT_JUSTIFICATION,
+                TitledBorder.DEFAULT_POSITION,
+                getFont(),
+                new Color(205, 210, 220)
+        ));
+
         this.grafo = grafo;
         inicializarMenuContextual();
 
@@ -102,6 +128,13 @@ public class PanelGrafo extends JPanel {
 
     public void setGrafo(Grafo grafo) {
         this.grafo = grafo;
+        nodoInicial = null;
+        nodoHorver = null;
+        nodoSeleccionado = null;
+        nodoSeleccionadoParaMover = null;
+        nodoOrigenConexion = null;
+        puntoRatonArrastre = null;
+        historialDeshacer.clear();
         repaint();
     }
 
@@ -132,10 +165,41 @@ public class PanelGrafo extends JPanel {
         JMenuItem itemEliminar = new JMenuItem("Eliminar Nodo");
         itemEliminar.addActionListener(e -> {
             if (nodoSeleccionado != null) {
+
+                // Antes de borrar, guardamos todo lo necesario para poder deshacer:
+                // el propio nodo y las conexiones ENTRANTES que se van a perder
+                // (grafo.eliminarNodo ya se encarga de quitarlas de los demás nodos;
+                // las conexiones SALIENTES del nodo no se tocan, quedan intactas en el objeto).
+                final NodoGrafo nodoBorrado = nodoSeleccionado;
+                final boolean eraInicio = (nodoInicial == nodoBorrado);
+
+                final java.util.List<Conexion> conexionesEntrantesPerdidas = new java.util.ArrayList<>();
+                for (NodoGrafo n : grafo.getNodos()) {
+                    if (n == nodoBorrado) continue;
+                    for (Conexion c : n.getConexionesSalientes()) {
+                        if (c.getDestino() == nodoBorrado) {
+                            conexionesEntrantesPerdidas.add(c);
+                        }
+                    }
+                }
+
                 grafo.eliminarNodo(nodoSeleccionado);
                 if (nodoInicial == nodoSeleccionado) {
                     nodoInicial = null;
                 }
+
+                // Guardamos en el historial cómo restaurar todo: reinsertar el nodo
+                // y reconstruir cada conexión entrante que se había perdido.
+                historialDeshacer.push(() -> {
+                    grafo.getNodos().add(nodoBorrado);
+                    for (Conexion c : conexionesEntrantesPerdidas) {
+                        c.getOrigen().agregarConexion(new Conexion(c.getOrigen(), nodoBorrado, c.getPeso()));
+                    }
+                    if (eraInicio) {
+                        nodoInicial = nodoBorrado;
+                    }
+                });
+
                 repaint();
             }
         });
@@ -208,7 +272,7 @@ public class PanelGrafo extends JPanel {
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         // Dibuja las conexiones existentes
-        g2d.setColor(Color.BLACK);
+        g2d.setColor(COLOR_ARISTA);
         g2d.setStroke(new BasicStroke(2));
         for (NodoGrafo nodo : grafo.getNodos()) {
             for (Conexion conexion : nodo.getConexionesSalientes()) {
@@ -226,29 +290,38 @@ public class PanelGrafo extends JPanel {
         // Dibuja los nodos con el color según su estado
         for (NodoGrafo nodo : grafo.getNodos()) {
 
-            // Prioridad 1: animación desde hilos
-            if (nodo.getEstadoAnimacion() == Modelo.EstadoAnimacion.ACTUAL) {
-                g2d.setColor(new Color(34, 197, 94));
-            } else if (nodo.getEstadoAnimacion() == Modelo.EstadoAnimacion.VISITADO) {
-                g2d.setColor(new Color(245, 165, 36));
+            Color colorBorde;
+            Color colorRelleno = COLOR_RELLENO_NODO;
 
-                // Prioridad 2: interacción manual del usuario
+            // Prioridad 1: animación desde hilos (se mantiene el relleno sólido para que resalte)
+            if (nodo.getEstadoAnimacion() == Modelo.EstadoAnimacion.ACTUAL) {
+                colorRelleno = new Color(34, 197, 94);
+                colorBorde = colorRelleno;
+            } else if (nodo.getEstadoAnimacion() == Modelo.EstadoAnimacion.VISITADO) {
+                colorRelleno = new Color(51, 82, 255);
+                colorBorde = colorRelleno;
+
+                // Prioridad 2: interacción manual del usuario (solo cambia el borde)
             } else if (nodo == nodoInicial) {
-                g2d.setColor(Color.GREEN);
+                colorBorde = COLOR_BORDE_INICIO;
             } else if (nodo == nodoHorver) {
-                g2d.setColor(Color.YELLOW);
+                colorBorde = COLOR_BORDE_HOVER;
             } else {
-                g2d.setColor(new Color(173, 216, 230));
+                colorBorde = COLOR_BORDE_NORMAL;
             }
 
             // Relleno
+            g2d.setColor(colorRelleno);
             g2d.fillOval(nodo.getX() - RADIO_NODO, nodo.getY() - RADIO_NODO, RADIO_NODO * 2, RADIO_NODO * 2);
 
-            // Borde
-            g2d.setColor(Color.BLACK);
+            // Borde (más grueso para que se note bien el color de estado)
+            g2d.setStroke(new BasicStroke(2.5f));
+            g2d.setColor(colorBorde);
             g2d.drawOval(nodo.getX() - RADIO_NODO, nodo.getY() - RADIO_NODO, RADIO_NODO * 2, RADIO_NODO * 2);
+            g2d.setStroke(new BasicStroke(2));
 
             // Texto central del nodo
+            g2d.setColor(COLOR_TEXTO_NODO);
             FontMetrics fm = g2d.getFontMetrics();
             int textoAncho = fm.stringWidth(nodo.getEtiqueta());
             int textoAlto = fm.getAscent();
@@ -300,16 +373,18 @@ public class PanelGrafo extends JPanel {
         int xMedio = (x1Offset + xDestino) / 2;
         int yMedio = (y1Offset + yDestino) / 2;
 
-        // Fondo blanco circular para legibilidad
-        g2d.setColor(Color.WHITE);
+        // Fondo circular oscuro para legibilidad sobre el lienzo oscuro
+        g2d.setColor(COLOR_CHIP_PESO);
         g2d.fillOval(xMedio - 10, yMedio - 10, 20, 20);
+        g2d.setColor(COLOR_ARISTA);
+        g2d.drawOval(xMedio - 10, yMedio - 10, 20, 20);
 
         // Texto del peso
-        g2d.setColor(Color.RED);
+        g2d.setColor(COLOR_TEXTO_PESO);
         g2d.drawString(String.valueOf(peso), xMedio - 4, yMedio + 4);
 
-        // Restaura el color negro
-        g2d.setColor(Color.BLACK);
+        // Restaura el color de las aristas
+        g2d.setColor(COLOR_ARISTA);
     }
 
     // ------------------------------------------------------------------
