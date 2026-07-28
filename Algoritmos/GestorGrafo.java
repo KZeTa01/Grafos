@@ -83,6 +83,7 @@ public class GestorGrafo {
                         reporte.registrarResumen(ordenEtiquetas, todosAlcanzados);
                         botonEjecutar.setEnabled(true);
                         panelGrafo.setEdicionBloqueada(false);
+                        
                     }
                 });
             }
